@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vokabeltest - Englisch/Deutsch</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .mode-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        .mode-btn {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .mode-btn.active, .mode-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 5px;
+            transition: width 0.3s;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+        .question-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .question-number {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 10px;
+        }
+        .word {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .pronunciation {
+            font-size: 14px;
+            color: #888;
+            font-style: italic;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .speak-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            flex-shrink: 0;
+        }
+        .speak-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
+        }
+        .speak-btn:active {
+            transform: scale(0.95);
+        }
+        .speak-btn.speaking {
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .answer-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .answer-input:focus {
+            border-color: #667eea;
+        }
+        .answer-input.correct {
+            border-color: #4caf50;
+            background: #e8f5e9;
+        }
+        .answer-input.wrong {
+            border-color: #f44336;
+            background: #ffebee;
+        }
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+        .feedback.correct {
+            background: #e8f5e9;
+            color: #2e7d32;
+            display: block;
+        }
+        .feedback.wrong {
+            background: #ffebee;
+            color: #c62828;
+            display: block;
+        }
+        .correct-answer {
+            font-weight: bold;
+        }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+            margin-top: 10px;
+        }
+        .results {
+            text-align: center;
+            display: none;
+        }
+        .results h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .score {
+            font-size: 72px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .score-label {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .emoji {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+        .wrong-list {
+            text-align: left;
+            background: #fff3e0;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .wrong-list h3 {
+            color: #e65100;
+            margin-bottom: 15px;
+        }
+        .wrong-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #ffe0b2;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .wrong-item:last-child {
+            border-bottom: none;
+        }
+        .hidden {
+            display: none;
+        }
+        /* Fireworks canvas */
+        #fireworks-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="fireworks-canvas"></canvas>
+    <div class="container">
+        <h1>🎓 Vokabeltest</h1>
+        <p class="subtitle">Englisch ↔ Deutsch</p>
+        
+        <div id="start-screen">
+            <div class="mode-selector">
+                <button class="mode-btn active" data-mode="en-de">Englisch → Deutsch</button>
+                <button class="mode-btn" data-mode="de-en">Deutsch → Englisch</button>
+                <button class="mode-btn" data-mode="mixed">Gemischt</button>
+            </div>
+            <button class="btn btn-primary" onclick="startQuiz()">Quiz starten 🚀</button>
+        </div>
+        
+        <div id="quiz-screen" class="hidden">
+            <div class="stats">
+                <span>Frage <span id="current-num">1</span> von <span id="total-num">20</span></span>
+                <span>✓ <span id="correct-count">0</span> | ✗ <span id="wrong-count">0</span></span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress"></div>
+            </div>
+            
+            <div class="question-card">
+                <div class="question-number" id="question-label">Übersetze ins Deutsche:</div>
+                <div class="word" id="question-word">upstairs</div>
+                <div class="pronunciation">
+                    <button class="speak-btn" id="speak-btn" onclick="speakWord()" title="Aussprache anhören">🔊</button>
+                    <span id="pronunciation">[ˈʌpˌsteəz]</span>
+                </div>
+                <input type="text" class="answer-input" id="answer-input" placeholder="Deine Antwort..." autocomplete="off">
+                <div class="feedback" id="feedback"></div>
+            </div>
+            
+            <button class="btn btn-primary" id="check-btn" onclick="checkAnswer()">Prüfen ✓</button>
+            <button class="btn btn-primary hidden" id="next-btn" onclick="nextQuestion()">Weiter →</button>
+        </div>
+        
+        <div id="results-screen" class="results">
+            <div class="emoji" id="result-emoji">🎉</div>
+            <h2>Quiz beendet!</h2>
+            <div class="score" id="final-score">85%</div>
+            <div class="score-label"><span id="correct-final">17</span> von <span id="total-final">20</span> richtig</div>
+            
+            <div class="wrong-list hidden" id="wrong-list">
+                <h3>📝 Diese Wörter üben:</h3>
+                <div id="wrong-items"></div>
+            </div>
+            
+            <button class="btn btn-primary" onclick="restartQuiz()">Nochmal spielen 🔄</button>
+            <button class="btn btn-secondary" onclick="location.reload()">Modus wechseln</button>
+        </div>
+    </div>
+
+    <script>
+        const vocabulary = [
+            { en: "upstairs", de: "oben", pron: "[ˈʌpˌsteəz]" },
+            { en: "downstairs", de: "unten", pron: "[ˌdaʊnˈsteəz]" },
+            { en: "room", de: "der Raum", pron: "[ruːm]" },
+            { en: "why?", de: "warum?", pron: "[waɪ]" },
+            { en: "an hour", de: "eine Stunde", pron: "[ən ˈaʊə]" },
+            { en: "for", de: "für", pron: "[fɔː]" },
+            { en: "It/He/She isn't here", de: "Es/Er/Sie ist nicht hier", pron: "[ˈɪznt hɪə]" },
+            { en: "here", de: "hier", pron: "[hɪə]" },
+            { en: "Sorry", de: "ntschuldigung", pron: "[ˈsɒri]" },
+            { en: "Who?", de: "Wer?", pron: "[huː]" },
+            { en: "brother", de: "der Bruder", pron: "[ˈbrʌðə]" },
+            { en: "sister", de: "die Schwester", pron: "[ˈsɪstə]" },
+            { en: "Yes, I am", de: "Ja, das bin ich", pron: "[jes aɪ æm]" },
+            { en: "See you", de: "is bald", pron: "[siː juː]" },
+            { en: "You're lucky", de: "Du hast Glück", pron: "[jɔː ˈlʌki]" },
+            { en: "sure", de: "sicher", pron: "[ʃʊə]" },
+            { en: "smile", de: "das Lächeln", pron: "[smaɪl]" },
+            { en: "sometimes", de: "manchmal", pron: "[ˈsʌmtaɪmz]" },
+            { en: "weird", de: "komisch", pron: "[wɪəd]" },
+            { en: "at school", de: "in der Schule", pron: "[æt skuːl]" },
+            { en: "she's (she is)", de: "sie ist", pron: "[ʃiːz]" },
+            { en: "they aren't", de: "sie sind nicht", pron: "[ðeɪ ɑːnt]" },
+            { en: "they're", de: "sie sind", pron: "[ðeə]" },
+            { en: "divorced", de: "geschieden", pron: "[dɪˈvɔːst]" },
+            { en: "parents", de: "Eltern", pron: "[ˈpeərənts]" },
+            { en: "to listen", de: "zuhören", pron: "[ˈlɪsn]" },
+            { en: "phone", de: "das Telefon", pron: "[fəʊn]" },
+            { en: "message", de: "die Nachricht", pron: "[ˈmesɪdʒ]" },
+            { en: "free", de: "frei", pron: "[friː]" },
+            { en: "to hang out", de: "abhängen", pron: "[hæŋ aʊt]" },
+            { en: "at my place", de: "bei mir", pron: "[æt maɪ pleɪs]" },
+            { en: "place", de: "der Ort, der Platz", pron: "[pleɪs]" },
+            { en: "to know", de: "kennen", pron: "[nəʊ]" },
+            { en: "primary school", de: "die Grundschule", pron: "[ˈpraɪməri skuːl]" },
+            { en: "again", de: "noch einmal", pron: "[əˈɡen]" },
+            { en: "Good morning", de: "Guten Morgen", pron: "[ɡʊd ˈmɔːnɪŋ]" },
+            { en: "Here's / Here are", de: "Hier ist / Hier sind", pron: "[hɪəz]" },
+            { en: "parcel", de: "das Paket", pron: "[ˈpɑːsl]" },
+            { en: "very big", de: "sehr groß", pron: "[ˈveri bɪɡ]" },
+            { en: "to understand", de: "verstehen", pron: "[ˌʌndəˈstænd]" },
+            { en: "father", de: "der Vater", pron: "[ˈfɑːðə]" },
+            { en: "mother", de: "die Mutter", pron: "[ˈmʌðə]" },
+            { en: "useful", de: "nützlich", pron: "[ˈjuːsfl]" },
+            { en: "phrase", de: "der Satz", pron: "[freɪz]" },
+            { en: "grandma", de: "die Oma", pron: "[ˈɡrænmɑː]" },
+            { en: "grandpa", de: "der Opa", pron: "[ˈɡrænpɑː]" },
+            { en: "aunt", de: "die Tante", pron: "[ɑːnt]" },
+            { en: "uncle", de: "der Onkel", pron: "[ˈʌŋkl]" },
+            { en: "cousin", de: "der Cousin, die Cousine", pron: "[ˈkʌzn]" },
+            { en: "some", de: "einige", pron: "[sʌm]" },
+            { en: "English", de: "Englisch", pron: "[ˈɪŋɡlɪʃ]" },
+            { en: "word", de: "das Wort", pron: "[wɜːd]" },
+            { en: "like words in other languages", de: "wie Wörter in anderen Sprachen", pron: "[laɪk wɜːdz]" },
+            { en: "other", de: "andere", pron: "[ˈʌðə]" },
+            { en: "language", de: "die Sprache", pron: "[ˈlæŋɡwɪdʒ]" },
+            { en: "e.g.", de: "zum Beispiel", pron: "[iːˈdʒiː]" },
+            { en: "to help", de: "helfen", pron: "[help]" },
+            { en: "help", de: "die Hilfe", pron: "[help]" },
+            { en: "when", de: "wenn", pron: "[wen]" },
+            { en: "to learn", de: "lernen", pron: "[lɜːn]" },
+            { en: "to talk (to)", de: "reden (mit)", pron: "[tɔːk]" },
+            { en: "people", de: "Leute", pron: "[ˈpiːpl]" },
+            { en: "umbrella", de: "er Regenschirm", pron: "[ʌmˈbrelə]" },
+            { en: "to type", de: "tippen", pron: "[taɪp]" },
+            { en: "to pronounce", de: "aussprechen", pron: "[prəˈnaʊns]" },
+            { en: "then", de: "dann", pron: "[ðen]" },
+            { en: "to hear", de: "hören", pron: "[hɪə]" },
+            { en: "to say", de: "sagen", pron: "[seɪ]" }
+        ];
+
+        let mode = 'en-de';
+        let questions = [];
+        let currentIndex = 0;
+        let correctCount = 0;
+        let wrongCount = 0;
+        let wrongAnswers = [];
+        let answered = false;
+
+        // Speech synthesis setup
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                // Cancel any ongoing speech
+                window.speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-GB'; // British English
+                utterance.rate = 0.85; // Slightly slower for learning
+                
+                // Try to find a good English voice
+                const voices = window.speechSynthesis.getVoices();
+                const englishVoice = voices.find(v => v.lang.startsWith('en-GB')) ||
+                                    voices.find(v => v.lang.startsWith('en'));
+                if (englishVoice) {
+                    utterance.voice = englishVoice;
+                }
+                
+                // Visual feedback
+                const btn = document.getElementById('speak-btn');
+                if (btn) {
+                    btn.classList.add('speaking');
+                    utterance.onend = () => btn.classList.remove('speaking');
+                    utterance.onerror = () => btn.classList.remove('speaking');
+                }
+                
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function speakWord() {
+            const q = questions[currentIndex];
+            if (q) {
+                speakText(q.en);
+            }
+        }
+
+        // Load voices (needed for some browsers)
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.getVoices();
+            window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+        }
+
+        // Mode selector
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                mode = btn.dataset.mode;
+            });
+        });
+
+        function shuffle(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function normalize(str) {
+            return str.toLowerCase()
+                .replace(/[;,]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .replace(/[()]/g, '')
+                .replace(/^(der|die|das|ein|eine)\s+/i, '')
+                .trim();
+        }
+
+        function checkMatch(userAnswer, correctAnswer) {
+            const userNorm = normalize(userAnswer);
+            const correctParts = correctAnswer.split(/[;,]/).map(p => normalize(p));
+            
+            // Check if user answer matches any part
+            for (const part of correctParts) {
+                if (userNorm === part) return true;
+                // Also check without articles
+                const partNoArticle = part.replace(/^(der|die|das|ein|eine)\s+/i, '').trim();
+                if (userNorm === partNoArticle) return true;
+            }
+            return false;
+        }
+
+        function startQuiz() {
+            questions = shuffle(vocabulary).map(item => {
+                let askEn = mode === 'en-de' || (mode === 'mixed' && Math.random() > 0.5);
+                return {
+                    ...item,
+                    askEn: askEn,
+                    question: askEn ? item.en : item.de,
+                    answer: askEn ? item.de : item.en,
+                    showPron: askEn
+                };
+            });
+            
+            currentIndex = 0;
+            correctCount = 0;
+            wrongCount = 0;
+            wrongAnswers = [];
+            
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            document.getElementById('results-screen').style.display = 'none';
+            document.getElementById('total-num').textContent = questions.length;
+            
+            showQuestion();
+        }
+
+        function showQuestion() {
+            answered = false;
+            const q = questions[currentIndex];
+            
+            document.getElementById('current-num').textContent = currentIndex + 1;
+            document.getElementById('question-label').textContent = q.askEn ? 'Übersetze ins Deutsche:' : 'Übersetze ins Englische:';
+            document.getElementById('question-word').textContent = q.question;
+            document.getElementById('pronunciation').textContent = q.showPron ? q.pron : '';
+            document.getElementById('speak-btn').style.display = q.showPron ? 'flex' : 'none';
+            document.getElementById('pronunciation').parentElement.style.display = q.showPron ? 'flex' : 'none';
+            
+            // Auto-play pronunciation for English words
+            if (q.showPron) {
+                setTimeout(() => speakText(q.en), 300);
+            }
+            
+            const input = document.getElementById('answer-input');
+            input.value = '';
+            input.className = 'answer-input';
+            input.placeholder = q.askEn ? 'Deine Antwort auf Deutsch...' : 'Your answer in English...';
+            input.focus();
+            
+            document.getElementById('feedback').className = 'feedback';
+            document.getElementById('feedback').innerHTML = '';
+            
+            document.getElementById('check-btn').classList.remove('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+            
+            const progress = ((currentIndex) / questions.length) * 100;
+            document.getElementById('progress').style.width = progress + '%';
+        }
+
+        function checkAnswer() {
+            if (answered) return;
+            answered = true;
+            
+            const q = questions[currentIndex];
+            const input = document.getElementById('answer-input');
+            const userAnswer = input.value.trim();
+            const feedback = document.getElementById('feedback');
+            
+            const isCorrect = checkMatch(userAnswer, q.answer);
+            
+            if (isCorrect) {
+                correctCount++;
+                input.className = 'answer-input correct';
+                feedback.className = 'feedback correct';
+                feedback.innerHTML = '✓ Richtig! 🎉';
+                launchCelebration();
+            } else {
+                wrongCount++;
+                input.className = 'answer-input wrong';
+                feedback.className = 'feedback wrong';
+                feedback.innerHTML = `✗ Falsch. Richtige Antwort: <span class="correct-answer">${q.answer}</span>`;
+                wrongAnswers.push(q);
+            }
+            
+            document.getElementById('correct-count').textContent = correctCount;
+            document.getElementById('wrong-count').textContent = wrongCount;
+            
+            document.getElementById('check-btn').classList.add('hidden');
+            document.getElementById('next-btn').classList.remove('hidden');
+            document.getElementById('next-btn').focus();
+        }
+
+        function nextQuestion() {
+            currentIndex++;
+            if (currentIndex < questions.length) {
+                showQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('results-screen').style.display = 'block';
+            
+            const percentage = Math.round((correctCount / questions.length) * 100);
+            document.getElementById('final-score').textContent = percentage + '%';
+            document.getElementById('correct-final').textContent = correctCount;
+            document.getElementById('total-final').textContent = questions.length;
+            
+            let emoji = '🎉';
+            if (percentage === 100) emoji = '🏆';
+            else if (percentage >= 90) emoji = '🌟';
+            else if (percentage >= 70) emoji = '😊';
+            else if (percentage >= 50) emoji = '💪';
+            else emoji = '📚';
+            document.getElementById('result-emoji').textContent = emoji;
+            
+            if (wrongAnswers.length > 0) {
+                document.getElementById('wrong-list').classList.remove('hidden');
+                const wrongItems = document.getElementById('wrong-items');
+                wrongItems.innerHTML = wrongAnswers.map(w => `
+                    <div class="wrong-item">
+                        <button class="speak-btn" style="width:28px;height:28px;font-size:12px;" onclick="speakText('${w.en.replace(/'/g, "\\'")}')">🔊</button>
+                        <strong>${w.en}</strong> → ${w.de}
+                    </div>
+                `).join('');
+            } else {
+                document.getElementById('wrong-list').classList.add('hidden');
+            }
+        }
+
+        function restartQuiz() {
+            startQuiz();
+        }
+
+        // Enter key to submit
+        document.getElementById('answer-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                if (!answered) {
+                    checkAnswer();
+                } else {
+                    nextQuestion();
+                }
+            }
+        });
+
+        // ========== FIREWORKS CELEBRATION ==========
+        const canvas = document.getElementById('fireworks-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let animationId = null;
+        let audioCtx = null;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Sound effect using Web Audio API
+        function playFireworkSound() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            // Create a "pop" sound
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            const filter = audioCtx.createBiquadFilter();
+
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            // Random frequency for variety
+            osc.frequency.setValueAtTime(200 + Math.random() * 300, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.3);
+
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(2000, audioCtx.currentTime);
+
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+
+            osc.type = 'sine';
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.3);
+
+            // Add a crackle/sparkle sound
+            setTimeout(() => {
+                const noise = audioCtx.createOscillator();
+                const noiseGain = audioCtx.createGain();
+                noise.connect(noiseGain);
+                noiseGain.connect(audioCtx.destination);
+                noise.frequency.setValueAtTime(800 + Math.random() * 400, audioCtx.currentTime);
+                noiseGain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                noiseGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+                noise.type = 'triangle';
+                noise.start(audioCtx.currentTime);
+                noise.stop(audioCtx.currentTime + 0.15);
+            }, 100);
+        }
+
+        class Particle {
+            constructor(x, y, color, velocity, size, gravity, friction, fade) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.velocity = velocity;
+                this.size = size;
+                this.gravity = gravity;
+                this.friction = friction;
+                this.alpha = 1;
+                this.fade = fade;
+                this.trail = [];
+            }
+
+            update() {
+                this.trail.push({ x: this.x, y: this.y, alpha: this.alpha });
+                if (this.trail.length > 5) this.trail.shift();
+
+                this.velocity.x *= this.friction;
+                this.velocity.y *= this.friction;
+                this.velocity.y += this.gravity;
+                this.x += this.velocity.x;
+                this.y += this.velocity.y;
+                this.alpha -= this.fade;
+            }
+
+            draw() {
+                // Draw trail
+                this.trail.forEach((point, i) => {
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, this.size * (i / this.trail.length) * 0.5, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color.replace('1)', `${point.alpha * 0.3})`);
+                    ctx.fill();
+                });
+
+                // Draw particle
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color.replace('1)', `${this.alpha})`);
+                ctx.fill();
+
+                // Add glow
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        function createFirework(x, y) {
+            const colors = [
+                'rgba(255, 107, 107, 1)',  // Red
+                'rgba(78, 205, 196, 1)',   // Teal
+                'rgba(255, 230, 109, 1)',  // Yellow
+                'rgba(170, 111, 255, 1)',  // Purple
+                'rgba(255, 159, 243, 1)',  // Pink
+                'rgba(46, 213, 115, 1)',   // Green
+                'rgba(255, 165, 2, 1)',    // Orange
+                'rgba(99, 205, 255, 1)'    // Light blue
+            ];
+
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const particleCount = 60 + Math.floor(Math.random() * 40);
+
+            for (let i = 0; i < particleCount; i++) {
+                const angle = (Math.PI * 2 / particleCount) * i;
+                const speed = 2 + Math.random() * 6;
+                particles.push(new Particle(
+                    x, y, color,
+                    { x: Math.cos(angle) * speed, y: Math.sin(angle) * speed },
+                    2 + Math.random() * 2,
+                    0.05,
+                    0.98,
+                    0.015 + Math.random() * 0.01
+                ));
+            }
+
+            playFireworkSound();
+        }
+
+        function animateFireworks() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            particles.forEach((particle, index) => {
+                particle.update();
+                particle.draw();
+
+                if (particle.alpha <= 0) {
+                    particles.splice(index, 1);
+                }
+            });
+
+            if (particles.length > 0) {
+                animationId = requestAnimationFrame(animateFireworks);
+            } else {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                animationId = null;
+            }
+        }
+
+        function launchCelebration() {
+            // Clear any previous animation
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles = [];
+
+            // Launch multiple fireworks with delays
+            const launches = [
+                { delay: 0, x: canvas.width * 0.5, y: canvas.height * 0.3 },
+                { delay: 200, x: canvas.width * 0.3, y: canvas.height * 0.4 },
+                { delay: 400, x: canvas.width * 0.7, y: canvas.height * 0.35 },
+                { delay: 600, x: canvas.width * 0.4, y: canvas.height * 0.25 },
+                { delay: 800, x: canvas.width * 0.6, y: canvas.height * 0.45 }
+            ];
+
+            launches.forEach(launch => {
+                setTimeout(() => {
+                    createFirework(launch.x, launch.y);
+                    if (!animationId) {
+                        animateFireworks();
+                    }
+                }, launch.delay);
+            });
+        }
+    </script>
+</body>
+</html>
